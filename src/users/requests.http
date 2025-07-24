@@ -1,0 +1,52 @@
+### Create a new user
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "name": "Joe",
+  "password": "StrongPassword123!"
+}
+
+### Login a user
+# @name login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "StrongPassword123!"
+}
+
+###
+@authToken = {{login.response.body.accessToken}}
+
+### Get logged-in user details
+GET http://localhost:3000/auth/current-user
+Authorization: Bearer {{authToken}}
+
+### Logout a user
+POST http://localhost:3000/auth/logout
+Authorization: Bearer {{authToken}}
+
+### Find a particular user by ID
+GET http://localhost:3000/users/3
+Authorization: Bearer {{authToken}}
+
+### Get all users with pagination
+GET http://localhost:3000/users?offset=0&limit=10
+Authorization: Bearer {{authToken}}
+
+### Update a user by ID
+PUT http://localhost:3000/users/3
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "John",
+  "nickname": "Johnny"
+}
+
+### Delete a user by ID
+DELETE http://localhost:3000/users/1
+Authorization: Bearer {{authToken}}
