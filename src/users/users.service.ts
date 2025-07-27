@@ -14,7 +14,7 @@ export class UsersService {
     async create(user: User): Promise<User> {
         const existingUser = await this.usersRepository.findOneBy({ email: user.email })
         if (existingUser) {
-            throw new UnprocessableEntityException("User with this email already exists")
+            throw new UnprocessableEntityException("User with this e-mail already exists")
         }
 
         return this.usersRepository.save(user)

@@ -6,20 +6,25 @@ import { ReportsModule } from "./reports/reports.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { User } from "./users/user.entity"
 import { Report } from "./reports/report.entity"
-import { ConfigModule } from "@nestjs/config"
+import { ConfigModule, ConfigService } from "@nestjs/config"
 import { AuthModule } from "./auth/auth.module"
+import { RefreshToken } from "./auth/refresh-token.entity"
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             ignoreEnvFile: process.env.NODE_ENV === "production",
-            isGlobal: true
+            isGlobal: true,
+            envFilePath: `.env.${process.env.NODE_ENV}`
         }),
-        TypeOrmModule.forRoot({
-            type: "sqlite",
-            database: "car_value.db",
-            entities: [User, Report],
-            synchronize: process.env.DB_SCHEMA_SYNC === "true"
+        TypeOrmModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                type: "sqlite",
+                database: configService.get("DB_NAME"),
+                entities: [User, Report, RefreshToken],
+                synchronize: configService.get("DB_SCHEMA_SYNC") === "true"
+            })
         }),
         UsersModule,
         ReportsModule,

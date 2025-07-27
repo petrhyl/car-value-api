@@ -19,6 +19,6 @@ export class RefreshToken {
     @Column()
     userId: number
 
-    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date
 }

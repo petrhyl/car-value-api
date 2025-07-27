@@ -4,9 +4,12 @@ Content-Type: application/json
 
 {
   "email": "user2@example.com",
-  "name": "Joe",
+  "name": "John",
   "password": "StrongPassword123!"
 }
+
+###
+@clientId = 880f9b05-bba6-48fd-9e40-a7a7b011fa47
 
 ### Login a user
 # @name login
@@ -14,39 +17,52 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "user2@example.com",
-  "password": "StrongPassword123!"
+  "email": "user@example.com",
+  "password": "StrongPassword123!",
+  "clientId": "{{clientId}}"
 }
 
 ###
-@authToken = {{login.response.body.accessToken}}
+@accessToken = {{login.response.body.accessToken}}
+@refreshToken = {{login.response.body.refreshToken}}
+@userId = {{login.response.body.id}}
 
 ### Get logged-in user details
 GET http://localhost:3000/auth/current-user
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{accessToken}}
 
 ### Logout a user
-POST http://localhost:3000/auth/logout
-Authorization: Bearer {{authToken}}
+POST http://localhost:3000/auth/logout?clientId={{clientId}}
+Authorization: Bearer {{accessToken}}
 
-### Find a particular user by ID
-GET http://localhost:3000/users/3
-Authorization: Bearer {{authToken}}
-
-### Get all users with pagination
-GET http://localhost:3000/users?offset=0&limit=10
-Authorization: Bearer {{authToken}}
-
-### Update a user by ID
-PUT http://localhost:3000/users/3
-Authorization: Bearer {{authToken}}
+### Refresh user token
+POST http://localhost:3000/auth/refresh-token
 Content-Type: application/json
 
 {
-  "name": "John",
+  "refreshToken": "{{refreshToken}}",
+  "clientId": "{{clientId}}",
+  "userId": {{userId}}
+}
+
+### Find a particular user by ID
+GET http://localhost:3000/users/1
+Authorization: Bearer {{accessToken}}
+
+### Get all users with pagination
+GET http://localhost:3000/users?offset=0&limit=10
+Authorization: Bearer {{accessToken}}
+
+### Update a user by ID
+PUT http://localhost:3000/users/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Joe",
   "nickname": "Johnny"
 }
 
 ### Delete a user by ID
 DELETE http://localhost:3000/users/1
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{accessToken}}

@@ -1,5 +1,13 @@
 export class AppUtils {
-    static parseNumberOrNull(value: string | unknown): number | null {
+    static parseNumberOrNull(value: unknown): number | null {
+        if (!value) {
+            return null
+        }
+
+        if (typeof value === "number") {
+            return value
+        }
+
         if (typeof value !== "string") {
             return null
         }

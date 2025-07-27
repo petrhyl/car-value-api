@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException, ForbiddenException } from "@nestjs/common"
+import { Injectable, UnauthorizedException, ForbiddenException } from "@nestjs/common"
 import { User } from "../users/user.entity"
 import { UsersService } from "../users/users.service"
 import { CreateUserDto } from "./dtos/create-user.dto"
@@ -22,11 +22,6 @@ export class AuthService {
     ) {}
 
     async signup(request: CreateUserDto): Promise<User> {
-        const existingUser = await this.usersService.findByEmail(request.email)
-        if (existingUser) {
-            throw new BadRequestException("User with this email already exists")
-        }
-
         const hash = await argon2.hash(request.password)
 
         const newUser = UserMapper.toNewEntity(request)
@@ -63,7 +58,7 @@ export class AuthService {
                 tokenVersion: user.tokenVersion
             },
             {
-                expiresIn: "15m"
+                expiresIn: "1h"
             }
         )
 
@@ -76,7 +71,7 @@ export class AuthService {
                 type: "refresh"
             },
             {
-                expiresIn: "7d"
+                expiresIn: "1y"
             }
         )
 

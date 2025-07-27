@@ -10,11 +10,11 @@ import {
     Query
 } from "@nestjs/common"
 import { UsersService } from "./users.service"
-import { AppUtils } from "src/app.utils"
+import { AppUtils } from "../app.utils"
 import { UpdateUserDto } from "./dtos/update-user.dto"
-import { Serialize } from "src/interceptors/serialize.interceptor"
+import { Serialize } from "../interceptors/serialize.interceptor"
 import { UserDto } from "./dtos/user.dto"
-import { Authorized } from "src/decorators/auth.decorator"
+import { Authorized } from "../decorators/auth.decorator"
 
 @Controller("users")
 @Authorized()
