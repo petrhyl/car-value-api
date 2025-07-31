@@ -1,20 +1,20 @@
 export class AppUtils {
     static parseNumberOrNull(value: unknown): number | null {
-        if (!value) {
+        if (
+            value === null ||
+            value === undefined ||
+            typeof value === "object" ||
+            typeof value === "function" ||
+            typeof value === "symbol"
+        ) {
             return null
         }
 
-        if (typeof value === "number") {
-            return value
-        }
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        const stringValue = String(value)
+        const parsedValue = parseFloat(stringValue)
 
-        if (typeof value !== "string") {
-            return null
-        }
-
-        const parsedValue = parseFloat(value)
-
-        if (isNaN(parsedValue) || parsedValue.toString() !== value) {
+        if (isNaN(parsedValue) || parsedValue.toString() !== stringValue) {
             return null
         }
 

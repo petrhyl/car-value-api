@@ -21,6 +21,7 @@ export class AuthController {
     }
 
     @Post("login")
+    @HttpCode(200)
     login(@Body() body: LoginUserDto) {
         return this.authService.login(body)
     }
@@ -37,6 +38,7 @@ export class AuthController {
     }
 
     @Post("refresh-token")
+    @HttpCode(200)
     async refresh(@Body() body: RefreshTokenDto) {
         return this.authService.refreshToken(body)
     }

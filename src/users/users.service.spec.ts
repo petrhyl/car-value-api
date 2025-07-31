@@ -3,11 +3,12 @@ import { UsersService } from "./users.service"
 import { getRepositoryToken } from "@nestjs/typeorm"
 import { User } from "./user.entity"
 import { NotFoundException, UnprocessableEntityException } from "@nestjs/common"
+import { Role } from "./role.entity"
 
 describe("UsersService", () => {
     let service: UsersService
     const mockedUserRepository = {
-        findOneBy: jest.fn(),
+        findOneBy: jest.fn().mockResolvedValue(null),
         save: jest.fn(),
         find: jest.fn(),
         remove: jest.fn()
@@ -20,6 +21,19 @@ describe("UsersService", () => {
                 {
                     provide: getRepositoryToken(User),
                     useValue: mockedUserRepository
+                },
+                {
+                    provide: getRepositoryToken(Role),
+                    useValue: {
+                        findOneBy: jest.fn().mockImplementation(async (criteria: { name: string }) =>
+                            Promise.resolve({
+                                id: 1,
+                                name: criteria.name,
+                                description: "Default role description"
+                            })
+                        ),
+                        save: jest.fn()
+                    }
                 }
             ]
         }).compile()
@@ -33,7 +47,6 @@ describe("UsersService", () => {
 
     it("should create a user", async () => {
         const user = { email: "test@example.com" } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(null)
         mockedUserRepository.save.mockResolvedValue(user)
 
         const result = await service.create(user)
@@ -45,14 +58,14 @@ describe("UsersService", () => {
 
     it("should throw an error if user already exists", async () => {
         const user = { email: "test@example.com" } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(user)
+        mockedUserRepository.findOneBy.mockResolvedValueOnce(user)
 
         await expect(service.create(user)).rejects.toThrow(UnprocessableEntityException)
     })
 
     it("should find a user by id", async () => {
         const user = { id: 1 } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(user)
+        mockedUserRepository.findOneBy.mockResolvedValueOnce(user)
 
         const result = await service.findById(1)
 
@@ -61,8 +74,6 @@ describe("UsersService", () => {
     })
 
     it("should return null if user is not found by id", async () => {
-        mockedUserRepository.findOneBy.mockResolvedValue(null)
-
         const result = await service.findById(1)
 
         expect(mockedUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 })
@@ -71,7 +82,7 @@ describe("UsersService", () => {
 
     it("should find a user by email", async () => {
         const user = { email: "test@example.com" } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(user)
+        mockedUserRepository.findOneBy.mockResolvedValueOnce(user)
 
         const result = await service.findByEmail("test@example.com")
 
@@ -80,8 +91,6 @@ describe("UsersService", () => {
     })
 
     it("should return null if user is not found by email", async () => {
-        mockedUserRepository.findOneBy.mockResolvedValue(null)
-
         const result = await service.findByEmail("test@example.com")
 
         expect(mockedUserRepository.findOneBy).toHaveBeenCalledWith({ email: "test@example.com" })
@@ -90,7 +99,7 @@ describe("UsersService", () => {
 
     it("should find all users with offset and limit", async () => {
         const users = [{ id: 1 }, { id: 2 }] as User[]
-        mockedUserRepository.find.mockResolvedValue(users)
+        mockedUserRepository.find.mockResolvedValueOnce(users)
 
         const result = await service.findAll(0, 10)
 
@@ -98,28 +107,29 @@ describe("UsersService", () => {
         expect(result).toEqual(users)
     })
 
-    it("should update a user", async () => {
+    it("should update a user's profile", async () => {
         const user = { id: 1, name: "Old Name" } as User
         const updatedUser = { id: 1, name: "New Name" } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(user)
+        mockedUserRepository.findOneBy.mockResolvedValueOnce(user)
         mockedUserRepository.save.mockResolvedValue(updatedUser)
 
-        const result = await service.update(1, { name: "New Name" })
+        const result = await service.updateProfile(1, { name: "New Name" })
 
         expect(mockedUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 })
         expect(mockedUserRepository.save).toHaveBeenCalledWith({ ...user, name: "New Name" })
         expect(result).toEqual(updatedUser)
     })
 
-    it("should throw an error if user to update is not found", async () => {
-        mockedUserRepository.findOneBy.mockResolvedValue(null)
+    it("should return null if user to update its profile is not found", async () => {
+        const result = await service.updateProfile(1, { name: "New Name" })
 
-        await expect(service.update(1, { name: "New Name" })).rejects.toThrow(NotFoundException)
+        expect(mockedUserRepository.findOneBy).toHaveBeenCalledWith({ id: 1 })
+        expect(result).toBeNull()
     })
 
     it("should delete a user by id", async () => {
         const user = { id: 1 } as User
-        mockedUserRepository.findOneBy.mockResolvedValue(user)
+        mockedUserRepository.findOneBy.mockResolvedValueOnce(user)
 
         await service.deleteById(1)
 
@@ -128,14 +138,12 @@ describe("UsersService", () => {
     })
 
     it("should throw an error if user to delete is not found", async () => {
-        mockedUserRepository.findOneBy.mockResolvedValue(null)
-
         await expect(service.deleteById(1)).rejects.toThrow(NotFoundException)
     })
 
     it("should increment token version", async () => {
         const user = { id: 1, tokenVersion: 1 } as User
-        mockedUserRepository.save.mockResolvedValue({ ...user, tokenVersion: 2 })
+        mockedUserRepository.save.mockResolvedValueOnce({ ...user, tokenVersion: 2 })
 
         await service.incrementTokenVersion(user)
 

@@ -11,6 +11,8 @@ async function bootstrap() {
         })
     )
     app.disable("x-powered-by")
+    app.setGlobalPrefix("api")
+    app.set("query parser", "extended")
 
     await app.listen(process.env.PORT ?? 3000)
 }

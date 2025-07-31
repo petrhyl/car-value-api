@@ -1,9 +1,9 @@
 ### Create a new user
-POST http://localhost:3000/auth/signup
+POST http://localhost:3000/api/auth/signup
 Content-Type: application/json
 
 {
-  "email": "user2@example.com",
+  "email": "user@example.com",
   "name": "John",
   "password": "StrongPassword123!"
 }
@@ -11,13 +11,25 @@ Content-Type: application/json
 ###
 @clientId = 880f9b05-bba6-48fd-9e40-a7a7b011fa47
 
-### Login a user
+### Login an admin user
 # @name login
-POST http://localhost:3000/auth/login
+POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
+  "email": "admin@example.com",
+  "password": "Pa$$sw0rd",
+  "clientId": "{{clientId}}"
+}
+
+
+### Login a user
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
   "password": "StrongPassword123!",
   "clientId": "{{clientId}}"
 }
@@ -28,15 +40,15 @@ Content-Type: application/json
 @userId = {{login.response.body.id}}
 
 ### Get logged-in user details
-GET http://localhost:3000/auth/current-user
+GET http://localhost:3000/api/auth/current-user
 Authorization: Bearer {{accessToken}}
 
 ### Logout a user
-POST http://localhost:3000/auth/logout?clientId={{clientId}}
+POST http://localhost:3000/api/auth/logout?clientId={{clientId}}
 Authorization: Bearer {{accessToken}}
 
 ### Refresh user token
-POST http://localhost:3000/auth/refresh-token
+POST http://localhost:3000/api/auth/refresh-token
 Content-Type: application/json
 
 {
@@ -46,23 +58,34 @@ Content-Type: application/json
 }
 
 ### Find a particular user by ID
-GET http://localhost:3000/users/1
+GET http://localhost:3000/api/users/1
 Authorization: Bearer {{accessToken}}
 
 ### Get all users with pagination
-GET http://localhost:3000/users?offset=0&limit=10
+GET http://localhost:3000/api/users?offset=0&limit=10
 Authorization: Bearer {{accessToken}}
 
-### Update a user by ID
-PUT http://localhost:3000/users/1
+### Update a user by ID 
+PUT http://localhost:3000/api/users/1
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
   "name": "Joe",
-  "nickname": "Johnny"
+  "nickname": "Johnny Bravo",
+  "roles": ["USER"]
+}
+
+### Update a user's profile
+PUT http://localhost:3000/api/users/2/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Joe",
+  "nickname": "Johnny Bravo"
 }
 
 ### Delete a user by ID
-DELETE http://localhost:3000/users/1
+DELETE http://localhost:3000/api/users/4
 Authorization: Bearer {{accessToken}}

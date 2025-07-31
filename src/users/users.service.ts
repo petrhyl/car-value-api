@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common"
+import {
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+    UnprocessableEntityException
+} from "@nestjs/common"
 import { Repository } from "typeorm"
 import { User } from "./user.entity"
 import { InjectRepository } from "@nestjs/typeorm"
+import { UpdateUserProfileDto } from "./dtos/update-user-profile.dto"
+import { Role, RoleName } from "./role.entity"
 import { UpdateUserDto } from "./dtos/update-user.dto"
 
 @Injectable()
@@ -9,13 +16,23 @@ export class UsersService {
     static readonly MAX_OFFSET = 100_000_000
     static readonly MAX_LIMIT = 1_000
 
-    constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+    constructor(
+        @InjectRepository(User) private readonly usersRepository: Repository<User>,
+        @InjectRepository(Role) private readonly rolesRepository: Repository<Role>
+    ) {}
 
     async create(user: User): Promise<User> {
         const existingUser = await this.usersRepository.findOneBy({ email: user.email })
         if (existingUser) {
             throw new UnprocessableEntityException("User with this e-mail already exists")
         }
+
+        const role = await this.rolesRepository.findOneBy({ name: RoleName.USER })
+        if (!role) {
+            throw new InternalServerErrorException("Default user role not found")
+        }
+
+        user.roles = [role]
 
         return this.usersRepository.save(user)
     }
@@ -35,11 +52,26 @@ export class UsersService {
         })
     }
 
-    async update(userId: number, user: UpdateUserDto): Promise<User> {
+    async update(id: number, user: UpdateUserDto): Promise<User | null> {
+        const existingUser = await this.usersRepository.findOneBy({ id })
+
+        if (!existingUser) {
+            return null
+        }
+
+        existingUser.name = user.name || existingUser.name
+        if (user.nickname) {
+            existingUser.nickname = user.nickname
+        }
+
+        return this.usersRepository.save(existingUser)
+    }
+
+    async updateProfile(userId: number, user: UpdateUserProfileDto): Promise<User | null> {
         const existingUser = await this.usersRepository.findOneBy({ id: userId })
 
         if (!existingUser) {
-            throw new NotFoundException("User not found")
+            return null
         }
 
         existingUser.name = user.name || existingUser.name

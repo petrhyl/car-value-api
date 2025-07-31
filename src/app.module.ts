@@ -2,13 +2,16 @@ import { Module } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { UsersModule } from "./users/users.module"
-import { ReportsModule } from "./reports/reports.module"
+import { CarReportsModule } from "./car-reports/car-reports.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { User } from "./users/user.entity"
-import { Report } from "./reports/report.entity"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { AuthModule } from "./auth/auth.module"
-import { RefreshToken } from "./auth/refresh-token.entity"
+import { AppSeeder } from "./app.seeder"
+import { Role } from "./users/role.entity"
+import { User } from "./users/user.entity"
+import { RolesGuard } from "./guards/role.guard"
+import { APP_GUARD } from "@nestjs/core"
+import { AuthenticationGuard } from "./guards/authentication.guard"
 
 @Module({
     imports: [
@@ -22,15 +25,21 @@ import { RefreshToken } from "./auth/refresh-token.entity"
             useFactory: (configService: ConfigService) => ({
                 type: "sqlite",
                 database: configService.get("DB_NAME"),
-                entities: [User, Report, RefreshToken],
-                synchronize: configService.get("DB_SCHEMA_SYNC") === "true"
+                synchronize: configService.get("DB_SCHEMA_SYNC") === "true",
+                autoLoadEntities: true
             })
         }),
+        TypeOrmModule.forFeature([Role, User]),
         UsersModule,
-        ReportsModule,
+        CarReportsModule,
         AuthModule
     ],
     controllers: [AppController],
-    providers: [AppService]
+    providers: [
+        AppService,
+        AppSeeder,
+        { provide: APP_GUARD, useClass: AuthenticationGuard },
+        { provide: APP_GUARD, useClass: RolesGuard }
+    ]
 })
 export class AppModule {}

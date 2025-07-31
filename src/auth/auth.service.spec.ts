@@ -9,8 +9,9 @@ import { JwtModule } from "@nestjs/jwt"
 import * as argon2 from "argon2"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { Repository } from "typeorm"
-import { User } from "src/users/user.entity"
+import { User } from "@/users/user.entity"
 import { UserAuthDto } from "./dtos/user-auth.dto"
+import { RoleName } from "@/users/role.entity"
 
 describe("AuthService", () => {
     let service: AuthService
@@ -51,6 +52,9 @@ describe("AuthService", () => {
                 ...user,
                 id: users.length + 1,
                 passwordHash: user.passwordHash,
+                roles: [
+                    { id: 1, name: RoleName.USER, description: "Regular user with limited access", users: [] }
+                ],
                 tokenVersion: 0,
                 refreshTokens: undefined
             }
@@ -85,8 +89,8 @@ describe("AuthService", () => {
             ],
             imports: [
                 ConfigModule.forRoot({
-                    ignoreEnvFile: process.env.NODE_ENV === "production",
-                    isGlobal: true
+                    isGlobal: true,
+                    envFilePath: ".env.test"
                 }),
                 JwtModule.registerAsync({
                     useFactory: (configService: ConfigService) => ({
@@ -115,7 +119,15 @@ describe("AuthService", () => {
                 passwordHash: expect.any(String) as string,
                 tokenVersion: 0,
                 nickname: null,
-                refreshTokens: undefined
+                refreshTokens: undefined,
+                roles: [
+                    {
+                        id: 1,
+                        name: RoleName.USER,
+                        description: "Regular user with limited access",
+                        users: []
+                    }
+                ]
             })
         })
     })
@@ -134,10 +146,12 @@ describe("AuthService", () => {
         })
 
         it("should throw an error if user logs in with incorrect password", async () => {
-            await expect(service.login({ ...loginUserDto, password: "WrongPassword" })).rejects.toMatchObject({
-                message: "Invalid credentials",
-                name: UnauthorizedException.name
-            })
+            await expect(service.login({ ...loginUserDto, password: "WrongPassword" })).rejects.toMatchObject(
+                {
+                    message: "Invalid credentials",
+                    name: UnauthorizedException.name
+                }
+            )
         })
 
         it("should generate access and refresh tokens on successful login", async () => {

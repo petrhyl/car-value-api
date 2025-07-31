@@ -15,6 +15,7 @@ export class UserMapper {
         userAuthDto.nickname = user.nickname
         userAuthDto.accessToken = accessToken
         userAuthDto.refreshToken = refreshToken
+        userAuthDto.roles = user.roles.map(role => role.name)
 
         return userAuthDto
     }

@@ -1,0 +1,61 @@
+### Login an admin user
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "StrongPassword123!",
+  "clientId": "880f9b05-bba6-48fd-9e40-a7a7b011fa47"
+}
+
+###
+@accessToken = {{login.response.body.accessToken}}
+
+### Create a new report
+POST http://localhost:3000/api/reports
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "price": 22500,
+    "make": "Ford",
+    "model": "Focus",
+    "year": 2025,
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "mileage": 1000
+}
+
+### Get report by ID
+GET http://localhost:3000/api/reports/3
+
+### Get all reports
+GET http://localhost:3000/api/reports?offset=0&limit=20&orderBy[price]=ASC
+
+### Get estimate from filtered reports
+GET http://localhost:3000/api/reports/estimate?year[gte]=2020&make=Audi
+
+### Change report's approval status
+PATCH http://localhost:3000/api/reports/1/approval
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "approved": true
+}
+
+### Update a report
+PUT http://localhost:3000/api/reports/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "price": 9500,
+    "make": "Peugeot",
+    "model": "308",
+    "year": 2017,
+    "latitude": 34.0522,
+    "longitude": -118.2437,
+    "mileage": 106000
+}

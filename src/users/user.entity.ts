@@ -1,7 +1,17 @@
-import { AfterInsert, Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm"
+import {
+    AfterInsert,
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    OneToMany,
+    ManyToMany,
+    JoinTable
+} from "typeorm"
 import { RefreshToken } from "../auth/refresh-token.entity"
+import { CarReport } from "@/car-reports/car-report.entity"
+import { Role } from "./role.entity"
 
-@Entity()
+@Entity("users")
 export class User {
     constructor(email: string, name: string, nickname?: string) {
         this.email = email
@@ -24,14 +34,21 @@ export class User {
     @Column()
     passwordHash: string
 
+    @ManyToMany(() => Role, role => role.users, { eager: true })
+    @JoinTable({ name: "user_roles" })
+    roles: Role[]
+
     @Column({ type: "int", default: 0 })
     tokenVersion: number
+
+    @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+    refreshTokens: RefreshToken[]
+
+    @OneToMany(() => CarReport, report => report.creator)
+    reports: CarReport[]
 
     @AfterInsert()
     logInsert() {
         console.log(`User inserted: ${this.email}`)
     }
-
-    @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
-    refreshTokens: RefreshToken[]
 }

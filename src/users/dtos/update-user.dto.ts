@@ -1,12 +1,9 @@
-import { IsOptional, IsString, MinLength } from "class-validator"
+import { RoleName } from "../role.entity"
+import { UpdateUserProfileDto } from "./update-user-profile.dto"
+import { IsArray, IsEnum } from "class-validator"
 
-export class UpdateUserDto {
-    @IsString()
-    @MinLength(2)
-    name: string
-
-    @IsString()
-    @MinLength(2)
-    @IsOptional()
-    nickname?: string
+export class UpdateUserDto extends UpdateUserProfileDto {
+    @IsArray()
+    @IsEnum(RoleName, { each: true })
+    roles?: RoleName[]
 }

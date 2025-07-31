@@ -1,4 +1,5 @@
-import { Expose } from "class-transformer"
+import { Expose, Transform } from "class-transformer"
+import { User } from "../user.entity"
 
 export class UserDto {
     @Expose()
@@ -12,4 +13,8 @@ export class UserDto {
 
     @Expose()
     nickname: string | null
+
+    @Expose()
+    @Transform(({ obj }: { obj: User }) => obj.roles.map(role => role.name))
+    roles: string[]
 }

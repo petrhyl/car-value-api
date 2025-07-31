@@ -3,6 +3,8 @@ import { PassportStrategy } from "@nestjs/passport"
 import { ExtractJwt, Strategy } from "passport-jwt"
 import { ConfigService } from "@nestjs/config"
 import { UsersService } from "../users/users.service"
+import { plainToInstance } from "class-transformer"
+import { UserAuthDto } from "./dtos/user-auth.dto"
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -27,7 +29,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             return null
         }
 
-        return user
+        const authUser = plainToInstance(UserAuthDto, user, {
+            excludeExtraneousValues: true
+        })
+
+        return authUser
     }
 }
 
