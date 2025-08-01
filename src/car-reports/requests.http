@@ -4,7 +4,7 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user2@example.com",
+  "email": "user@example.com",
   "password": "StrongPassword123!",
   "clientId": "880f9b05-bba6-48fd-9e40-a7a7b011fa47"
 }
@@ -18,23 +18,25 @@ Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "price": 22500,
-    "make": "Ford",
-    "model": "Focus",
-    "year": 2025,
+    "price": 21500,
+    "make": "Skoda",
+    "model": "Kodiaq",
+    "year": 2024,
     "latitude": 48.8566,
     "longitude": 2.3522,
-    "mileage": 1000
+    "mileage": 8000
 }
 
 ### Get report by ID
-GET http://localhost:3000/api/reports/3
+GET http://localhost:3000/api/reports/2
 
 ### Get all reports
-GET http://localhost:3000/api/reports?offset=0&limit=20&orderBy[price]=ASC
+GET http://localhost:3000/api/reports?offset=0&limit=20&year[gte]=2020
+Authorization: Bearer {{accessToken}}
 
 ### Get estimate from filtered reports
 GET http://localhost:3000/api/reports/estimate?year[gte]=2020&make=Audi
+Authorization: Bearer {{accessToken}}
 
 ### Change report's approval status
 PATCH http://localhost:3000/api/reports/1/approval

@@ -1,7 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { CarReportsService } from "./car-reports.service"
-import { getRepositoryToken } from "@nestjs/typeorm"
-import { CarReport } from "./car-report.entity"
+import { carReportsRepositoryProvider } from "./car-reports.repository.provider"
 
 describe("ReportsService", () => {
     let service: CarReportsService
@@ -9,7 +8,9 @@ describe("ReportsService", () => {
         create: jest.fn(),
         save: jest.fn(),
         findOne: jest.fn(),
-        find: jest.fn()
+        find: jest.fn(),
+        findWithFilters: jest.fn(),
+        getAveragePriceWithCount: jest.fn()
     }
 
     beforeEach(async () => {
@@ -17,7 +18,7 @@ describe("ReportsService", () => {
             providers: [
                 CarReportsService,
                 {
-                    provide: getRepositoryToken(CarReport),
+                    provide: carReportsRepositoryProvider.provide,
                     useValue: mockedRepository
                 }
             ]

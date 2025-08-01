@@ -3,8 +3,8 @@ POST http://localhost:3000/api/auth/signup
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "name": "John",
+  "email": "user2@example.com",
+  "name": "Joe",
   "password": "StrongPassword123!"
 }
 
@@ -77,15 +77,15 @@ Content-Type: application/json
 }
 
 ### Update a user's profile
-PUT http://localhost:3000/api/users/2/profile
+PUT http://localhost:3000/api/users/3/profile
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-  "name": "Joe",
+  "name": "John",
   "nickname": "Johnny Bravo"
 }
 
 ### Delete a user by ID
-DELETE http://localhost:3000/api/users/4
+DELETE http://localhost:3000/api/users/2
 Authorization: Bearer {{accessToken}}

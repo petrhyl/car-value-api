@@ -9,7 +9,7 @@ export class AuthenticationGuard extends AuthGuard("jwt") {
         _info: any,
         _context: ExecutionContext,
         _status?: any
-    ): TUser {
-        return user
+    ): TUser | null {
+        return user || null
     }
 }
