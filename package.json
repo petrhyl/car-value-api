@@ -5,6 +5,9 @@
     "author": "",
     "private": true,
     "license": "UNLICENSED",
+    "engines": {
+        "node": ">=22.0.0"
+    },
     "scripts": {
         "seed": "tsc && node dist/seed/seed.js",
         "build": "nest build",
