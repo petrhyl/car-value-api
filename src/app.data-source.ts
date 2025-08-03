@@ -9,8 +9,8 @@ const dbType = (process.env.DB_TYPE as "postgres" | "mysql" | "sqlite") || "sqli
 
 let options: DataSourceOptions
 
-const migrationsPath = "dist/migrations/*.js"
-const entitiesPath = "dist/**/*.entity.js"
+const migrationsPath = "migrations/*.js"
+const entitiesPath = "**/*.entity.js"
 
 if (dbType === "sqlite") {
     options = {
@@ -23,12 +23,17 @@ if (dbType === "sqlite") {
 } else {
     options = {
         type: dbType,
+        url: process.env.DATABASE_URL,
         host: process.env.DB_HOST || "localhost",
         port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
         username: process.env.DB_USER || "user",
         password: process.env.DB_PASSWORD || "password",
         database: process.env.DB_NAME || "database",
         synchronize: process.env.DB_SCHEMA_SYNC === "true",
+        migrationsRun: true,
+        ssl: {
+            rejectUnauthorized: false
+        },
         migrations: [migrationsPath],
         entities: [entitiesPath]
     }
