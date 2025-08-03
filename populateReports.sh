@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the access token (replace with your actual token)
-ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsInRva2VuVmVyc2lvbiI6MCwiaWF0IjoxNzU0MDkxNDM1LCJleHAiOjE3NTQwOTUwMzV9.40WAeF2qy6IJHhgibz3sw49s_icAHy5D7SMBkYmN_d0"
+ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsInRva2VuVmVyc2lvbiI6MCwiaWF0IjoxNzU0MjMxMjk0LCJleHAiOjE3NTQyMzQ4OTR9.3TaJFvcC6AzVxGOp2m_qmrResaVUBg0jItgUpJUkdqU"
 
 # Define the array of JSON objects
 declare -a reports=(
@@ -34,7 +34,7 @@ done
 
 echo "First part of reports have been sent."
 
-ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjMsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc1NDA5MTYwMiwiZXhwIjoxNzU0MDk1MjAyfQ.WvrU3j6IT_iqNX_oUGqMacP-whvfwJN6PG_2ImUT-BM"
+ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoidXNlcjJAZXhhbXBsZS5jb20iLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc1NDIzMTI2MCwiZXhwIjoxNzU0MjM0ODYwfQ.liArTO_mgU-d4FAOq7POAFnexG-A2AS89hJ47RzRLdI"
 
 declare -a another_reports=(
   '{"price":32000,"make":"Toyota","model":"Corolla","year":2023,"latitude":34.6937,"longitude":135.5023,"mileage":9000}'
@@ -66,7 +66,7 @@ done
 
 echo "All reports have been sent."
 
-ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc1NDA5MTQxMywiZXhwIjoxNzU0MDk1MDEzfQ.vdjo5WGJeMkZhL8qk9p4m6uDtfI0yuHvP41YCrnjijk"
+ACCESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJ0b2tlblZlcnNpb24iOjAsImlhdCI6MTc1NDIzMTMwNywiZXhwIjoxNzU0MjM0OTA3fQ.lVvNd9p1etZ7JrL-RqD8CxFBsNceJ_opsQbs31lucrA"
 
 for reportId in {1..33}; do  
   curl -X PATCH http://localhost:3000/api/reports/$reportId/approval \
