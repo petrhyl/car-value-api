@@ -19,6 +19,9 @@ export class RefreshToken {
     @Column()
     userId: number
 
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+    @Column({
+        type: process.env.DB_TYPE === "postgres" ? "timestamptz" : "datetime",
+        default: () => "CURRENT_TIMESTAMP"
+    })
     createdAt: Date
 }
