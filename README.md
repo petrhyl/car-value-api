@@ -1,98 +1,133 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Car Value API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Overview
+The Car Value API is a backend service built with [NestJS](https://nestjs.com/) and [TypeORM](https://typeorm.io/) to manage car reports, user authentication, and estimate car values based on various parameters. It supports PostgreSQL databases. It is ready to publish on Heroku platform using Heroku CLI and Heroku Postgres add-on.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
+- User authentication and authorization (JWT-based).
+- CRUD operations for car reports.
+- Car value estimation based on filters.
+- Database migrations with TypeORM.
+- Environment-specific configurations.
 
-## Description
+## Prerequisites
+- Node.js >= 22.0.0
+- PostgreSQL database
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd car-value
+   ```
 
-## Project setup
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-$ npm install
-```
+3. Set up environment variables:
+   - Create a `.env.development` file manually by copying variables from `.env.test`:
+     ```bash
+     cp .env.test .env.development
+     ```
+   - Update the `.env.development` file and set `DB_SCHEMA_SYNC` to `false` for development.
 
-## Compile and run the project
+4. Create a Docker container with PostgreSQL database:
+   ```bash
+   docker run --name car-value-db -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
+   ```
 
-```bash
-# development
-$ npm run start
+5. Run application for the first time
+   ```bash
+   npm run build
+   npm run migration:run
+   npm run dev
+   ```
 
-# watch mode
-$ npm run start:dev
+## Scripts
+- **Start Development Server:**
+  ```bash
+  npm run dev
+  ```
+- **Build for Production:**
+  ```bash
+  npm run build
+  ```
+- **Start Production Server:**
+  ```bash
+  npm run start:prod
+  ```
+- **Generate Migrations:**
+  ```bash
+  npm run migration:generate -- src/migrations/<migration-name>
+  ```
+- **Run pending Migrations:**
+  ```bash
+  npm run migration:run
+  ```
+- **Revert Migrations:**
+  ```bash
+  npm run migration:revert
+  ```
 
-# production mode
-$ npm run start:prod
-```
+## API Endpoints
+### Authentication
+- **Sign Up:** `POST /api/auth/signup`
+- **Login:** `POST /api/auth/login`
+- **Logout:** `POST /api/auth/logout`
+- **Refresh Token:** `POST /api/auth/refresh-token`
 
-## Run tests
+### Users
+- **Get Current User:** `GET /api/auth/current-user`
+- **Get All Users:** `GET /api/users`
+- **Update User:** `PUT /api/users/:id`
+- **Delete User:** `DELETE /api/users/:id`
 
-```bash
-# unit tests
-$ npm run test
+### Car Reports
+- **Create Report:** `POST /api/reports`
+- **Get All Reports:** `GET /api/reports`
+- **Get Report by ID:** `GET /api/reports/:id`
+- **Update Report:** `PUT /api/reports/:id`
+- **Delete Report:** `DELETE /api/reports/:id`
+- **Estimate Car Value:** `GET /api/reports/estimate`
 
-# e2e tests
-$ npm run test:e2e
+## Database Configuration
+The project supports both PostgreSQL and SQLite. Configure the database in the `.env` file:
 
-# test coverage
-$ npm run test:cov
+### Example of environment variables for Production:
+```env
+NODE_ENV=production
+DB_TYPE=postgres
+DATABASE_URL=your-database-url
+JWT_SECRET=top-secret-key
 ```
 
 ## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+1. Install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli).
+2. Log in to Heroku:
+   ```bash
+   heroku login
+   ```
+3. Create a new Heroku app:
+   ```bash
+   heroku create car-value-api
+   ```
+4. Add Heroku Postgres add-on:
+   ```bash
+   heroku addons:create heroku-postgresql:essential-0
+   ```
+5. Set environment variables:
+   ```bash
+   heroku config:set NODE_ENV=production
+   heroku config:set DB_TYPE=postgres
+   heroku config:set JWT_SECRET=top-secret-key
+   ```
+6. Deploy the application:
+   ```bash
+   git push heroku main
+   ```
+7. Run application by enabling the dyno:
+   ```bash
+   heroku ps:scale web=1
+   ```
