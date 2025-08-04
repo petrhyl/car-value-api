@@ -86,7 +86,7 @@ The Car Value API is a backend service built with [NestJS](https://nestjs.com/) 
 
 ### Car Reports
 - **Create Report:** `POST /api/reports`
-- **Get All Reports:** `GET /api/reports`
+- **Get List of Reports:** `GET /api/reports?limit=20&offset=0`
 - **Get Report by ID:** `GET /api/reports/:id`
 - **Update Report:** `PUT /api/reports/:id`
 - **Delete Report:** `DELETE /api/reports/:id`

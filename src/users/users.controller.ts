@@ -69,7 +69,7 @@ export class UsersController {
     @Put(":id")
     @Roles(RoleName.ADMIN)
     @Serialize(UserDto)
-    async updateUser(@CurrentUser() user: UserAuthDto, @Param("id") id: string, @Body() body: UpdateUserDto) {
+    async updateUser(@Param("id") id: string, @Body() body: UpdateUserDto) {
         const parsedId = AppUtils.parseNumberOrNull(id)
 
         if (parsedId === null) {
