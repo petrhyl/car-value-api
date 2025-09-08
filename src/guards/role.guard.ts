@@ -1,6 +1,7 @@
-import { UserAuthDto } from "@/auth/dtos/user-auth.dto"
+import { AppRequest } from "@/app.request"
 import { ROLES_KEY } from "@/decorators/role.decorator"
 import { RoleName } from "@/users/role.entity"
+import { User } from "@/users/user.entity"
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
 import { Request } from "express"
@@ -18,7 +19,7 @@ export class RolesGuard implements CanActivate {
             return true
         }
 
-        const { user } = context.switchToHttp().getRequest<Request & { user: UserAuthDto }>()
+        const { user } = context.switchToHttp().getRequest<AppRequest>()
 
         if (!user?.roles) {
             return false
@@ -27,11 +28,11 @@ export class RolesGuard implements CanActivate {
         return RolesGuard.hasRoles(user, requiredRoles)
     }
 
-    static hasRoles(user: UserAuthDto, roles: RoleName[]): boolean {
-        if (!user || !user.roles) {
+    static hasRoles(user: User, roles: RoleName[]): boolean {
+        if (!user || !user.roles?.length) {
             return false
         }
 
-        return roles.some(role => user.roles.includes(role))
+        return user.roles.some(role => roles.includes(role.name))
     }
 }

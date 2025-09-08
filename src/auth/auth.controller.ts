@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Query, BadRequestException } from "@nestjs/common"
+import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { CreateUserDto } from "./dtos/create-user.dto"
 import { LoginUserDto } from "./dtos/login-user.dto"
@@ -29,12 +29,8 @@ export class AuthController {
     @Post("logout")
     @Authorized()
     @HttpCode(204)
-    async logout(@CurrentUser() user: User, @Query("clientId") clientId: string) {
-        if (!clientId) {
-            throw new BadRequestException("clientId is required")
-        }
-
-        await this.authService.logout(user, clientId)
+    async logout(@CurrentUser() user: User, @Body() body: RefreshTokenDto) {
+        await this.authService.logout(user, body)
     }
 
     @Post("refresh-token")

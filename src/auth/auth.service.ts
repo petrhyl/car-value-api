@@ -8,16 +8,13 @@ import { LoginUserDto } from "./dtos/login-user.dto"
 import { JwtService } from "@nestjs/jwt"
 import { UserAuthDto } from "./dtos/user-auth.dto"
 import { RefreshTokenDto } from "./dtos/refresh-token.dto"
-import { RefreshToken } from "./refresh-token.entity"
-import { InjectRepository } from "@nestjs/typeorm"
-import { Repository } from "typeorm"
+import { RefreshTokenService } from "./refresh-token.service"
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
-        @InjectRepository(RefreshToken)
-        private readonly refreshTokenRepository: Repository<RefreshToken>,
+        private readonly refreshTokenService: RefreshTokenService,
         private readonly jwtService: JwtService
     ) {}
 
@@ -50,118 +47,70 @@ export class AuthService {
             throw new UnauthorizedException("Invalid credentials")
         }
 
+        const existingRefreshTokens = await this.refreshTokenService.findRefreshTokenByUserIdAndClientId(
+            user.id,
+            payload.clientId
+        )
+        if (existingRefreshTokens) {
+            await this.refreshTokenService.invalidateRefreshTokens(existingRefreshTokens)
+        }
+
         // Generate access token
         const accessToken = await this.jwtService.signAsync(
             {
                 sub: user.id,
                 email: user.email,
-                tokenVersion: user.tokenVersion
+                tokenVersion: user.tokenVersion,
+                type: "access"
             },
             {
                 expiresIn: "1h"
             }
         )
 
-        // Generate refresh token
-        const refreshToken = await this.jwtService.signAsync(
-            {
-                sub: user.id,
-                email: user.email,
-                tokenVersion: user.tokenVersion,
-                type: "refresh"
-            },
-            {
-                expiresIn: "1y"
-            }
-        )
-
-        const existing = await this.findRefreshTokenByUserAndClient(user.id, payload.clientId)
-        if (existing) {
-            await this.updateRefreshToken(user.id, payload.clientId, refreshToken)
-        } else {
-            await this.createRefreshToken(user.id, refreshToken, payload.clientId)
-        }
+        const refreshToken = await this.refreshTokenService.createRefreshToken(user, payload.clientId)
 
         return UserMapper.toAuthDto(user, accessToken, refreshToken)
     }
 
-    async logout(user: User, clientId: string): Promise<void> {
-        await this.usersService.incrementTokenVersion(user)
-        await this.removeRefreshTokenByUserAndClient(user.id, clientId)
+    async logout(user: User, payload: RefreshTokenDto): Promise<void> {
+        const tokenRecord = await this.refreshTokenService.findValidRefreshTokenEntity(payload.refreshToken)
+
+        if (!tokenRecord || tokenRecord.userId !== user.id) {
+            await this.refreshTokenService.invalidateAllTokensOfUser(user.id)
+
+            throw new ForbiddenException("You do not have permission to perform this action")
+        }
+
+        await this.refreshTokenService.invalidateRefreshTokens([tokenRecord])
     }
 
     async refreshToken(payload: RefreshTokenDto): Promise<UserAuthDto> {
-        const user = await this.usersService.findById(payload.userId)
+        const tokenRecord = await this.refreshTokenService.findValidRefreshTokenEntity(payload.refreshToken)
+
+        const user = await this.usersService.findById(tokenRecord.userId)
         if (!user) {
-            throw new ForbiddenException("User not found")
+            await this.refreshTokenService.invalidateAllTokensOfUser(tokenRecord.userId)
+
+            throw new ForbiddenException("User no longer exists")
         }
 
-        const tokenRecord = await this.findRefreshTokenByUserAndClient(payload.userId, payload.clientId)
-        if (!tokenRecord) {
-            throw new ForbiddenException("Refresh token not found")
-        }
+        await this.refreshTokenService.invalidateRefreshTokens([tokenRecord])
 
-        // Validate refresh token
-        const isValid = await argon2.verify(tokenRecord.tokenHash, payload.refreshToken)
-        if (!isValid) {
-            throw new ForbiddenException("Invalid refresh token")
-        }
-
-        // Rotate: issue new tokens and update stored hash
         const accessToken = await this.jwtService.signAsync(
             {
                 sub: user.id,
                 email: user.email,
-                tokenVersion: user.tokenVersion
+                tokenVersion: user.tokenVersion,
+                type: "access"
             },
             {
                 expiresIn: "15m"
             }
         )
-        const newRefreshToken = await this.jwtService.signAsync(
-            {
-                sub: user.id,
-                email: user.email,
-                tokenVersion: user.tokenVersion,
-                type: "refresh"
-            },
-            {
-                expiresIn: "7d"
-            }
-        )
 
-        const existing = await this.findRefreshTokenByUserAndClient(user.id, payload.clientId)
-        if (existing) {
-            await this.updateRefreshToken(user.id, payload.clientId, newRefreshToken)
-        } else {
-            await this.createRefreshToken(user.id, newRefreshToken, payload.clientId)
-        }
+        const newRefreshToken = await this.refreshTokenService.createRefreshToken(user, payload.clientId)
 
         return UserMapper.toAuthDto(user, accessToken, newRefreshToken)
-    }
-
-    async createRefreshToken(userId: number, token: string, clientId: string): Promise<RefreshToken> {
-        const hashedRefreshToken = await argon2.hash(token)
-
-        const refreshToken = this.refreshTokenRepository.create({
-            userId,
-            tokenHash: hashedRefreshToken,
-            clientId
-        })
-        return this.refreshTokenRepository.save(refreshToken)
-    }
-
-    async findRefreshTokenByUserAndClient(userId: number, clientId: string): Promise<RefreshToken | null> {
-        return this.refreshTokenRepository.findOneBy({ userId, clientId })
-    }
-
-    async removeRefreshTokenByUserAndClient(userId: number, clientId: string): Promise<void> {
-        await this.refreshTokenRepository.delete({ userId, clientId })
-    }
-
-    async updateRefreshToken(userId: number, clientId: string, token: string): Promise<void> {
-        const hashedRefreshToken = await argon2.hash(token)
-
-        await this.refreshTokenRepository.update({ userId, clientId }, { tokenHash: hashedRefreshToken })
     }
 }

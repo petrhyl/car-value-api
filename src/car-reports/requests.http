@@ -31,11 +31,11 @@ Content-Type: application/json
 GET http://localhost:3000/api/reports/2
 
 ### Get all reports
-GET http://localhost:3000/api/reports?offset=0&limit=20&year[gte]=2020
+GET http://localhost:3000/api/reports?offset=0&limit=20&make=Mitsubishi
 Authorization: Bearer {{accessToken}}
 
 ### Get estimate from filtered reports
-GET http://localhost:3000/api/reports/estimate?year[gte]=2020&make=Audi
+GET http://localhost:3000/api/reports/estimate?make=Toyota
 Authorization: Bearer {{accessToken}}
 
 ### Change report's approval status

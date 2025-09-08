@@ -3,7 +3,6 @@ import { CarReportsService } from "./car-reports.service"
 import { CreateCarReportDto } from "./dtos/create-car-report.dto"
 import { Authorized } from "@/decorators/auth.decorator"
 import { CurrentUser } from "@/decorators/current-user.decorator"
-import { UserAuthDto } from "@/auth/dtos/user-auth.dto"
 import { Serialize } from "@/interceptors/serialize.interceptor"
 import { CarReportDto } from "./dtos/car-report.dto"
 import { ApproveCarReportDto } from "./dtos/approve-car-report.dto"
@@ -11,6 +10,7 @@ import { Roles } from "@/decorators/role.decorator"
 import { RoleName } from "@/users/role.entity"
 import { GetAllCarReportsQuery } from "./dtos/get-all-car-reports.query"
 import { GetEstimateQuery } from "./dtos/get-estimate.query"
+import { User } from "@/users/user.entity"
 
 @Controller("reports")
 export class CarReportsController {
@@ -19,12 +19,12 @@ export class CarReportsController {
     @Post()
     @Authorized()
     @Serialize(CarReportDto)
-    async createReport(@Body() report: CreateCarReportDto, @CurrentUser() user: UserAuthDto) {
+    async createReport(@Body() report: CreateCarReportDto, @CurrentUser() user: User) {
         return await this.reportsService.create(user, report)
     }
 
     @Get("estimate")
-    async getEstimate(@Query() query: GetEstimateQuery, @CurrentUser() user: UserAuthDto) {
+    async getEstimate(@Query() query: GetEstimateQuery, @CurrentUser() user: User) {
         const result = await this.reportsService.generateEstimate(query, user)
 
         if (!result) {
@@ -47,7 +47,7 @@ export class CarReportsController {
 
     @Get()
     @Serialize(CarReportDto)
-    async getReports(@Query() query: GetAllCarReportsQuery, @CurrentUser() user: UserAuthDto) {
+    async getReports(@Query() query: GetAllCarReportsQuery, @CurrentUser() user: User) {
         return await this.reportsService.findList(query, user)
     }
 
@@ -67,11 +67,7 @@ export class CarReportsController {
     @Put(":id")
     @Authorized()
     @Serialize(CarReportDto)
-    async updateReport(
-        @Param("id") id: number,
-        @Body() body: CreateCarReportDto,
-        @CurrentUser() user: UserAuthDto
-    ) {
+    async updateReport(@Param("id") id: number, @Body() body: CreateCarReportDto, @CurrentUser() user: User) {
         const result = await this.reportsService.update(id, user, body)
         if (!result) {
             throw new NotFoundException("Report not found")

@@ -35,8 +35,9 @@ The Car Value API is a backend service built with [NestJS](https://nestjs.com/) 
 
 4. Create a Docker container with PostgreSQL database:
    ```bash
-   docker run --name car-value-db -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres
+   docker compose --env-file .env.development up -d
    ```
+
 
 5. Run application for the first time
    ```bash

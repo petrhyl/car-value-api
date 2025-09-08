@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "email": "user2@example.com",
-  "name": "Joe",
+  "name": "John",
   "password": "StrongPassword123!"
 }
 
@@ -35,30 +35,40 @@ Content-Type: application/json
 }
 
 ###
+
 @accessToken = {{login.response.body.accessToken}}
+
 @refreshToken = {{login.response.body.refreshToken}}
-@userId = {{login.response.body.id}}
+
+### Refresh user token
+# @name refresh
+POST http://localhost:3000/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}",
+  "clientId": "{{clientId}}"
+}
+
+###
+@refreshedRefreshToken = {{refresh.response.body.refreshToken}}
 
 ### Get logged-in user details
 GET http://localhost:3000/api/auth/current-user
 Authorization: Bearer {{accessToken}}
 
 ### Logout a user
-POST http://localhost:3000/api/auth/logout?clientId={{clientId}}
+POST http://localhost:3000/api/auth/logout
 Authorization: Bearer {{accessToken}}
-
-### Refresh user token
-POST http://localhost:3000/api/auth/refresh-token
 Content-Type: application/json
 
 {
-  "refreshToken": "{{refreshToken}}",
-  "clientId": "{{clientId}}",
-  "userId": {{userId}}
+  "refreshToken": "{{refreshedRefreshToken}}",
+  "clientId": "{{clientId}}"
 }
 
 ### Find a particular user by ID
-GET http://localhost:3000/api/users/1
+GET http://localhost:3000/api/users/2
 Authorization: Bearer {{accessToken}}
 
 ### Get all users with pagination
@@ -77,7 +87,7 @@ Content-Type: application/json
 }
 
 ### Update a user's profile
-PUT http://localhost:3000/api/users/3/profile
+PUT http://localhost:3000/api/users/2/profile
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 

@@ -19,9 +19,9 @@ import { Authorized } from "../decorators/auth.decorator"
 import { Roles } from "@/decorators/role.decorator"
 import { RoleName } from "./role.entity"
 import { CurrentUser } from "@/decorators/current-user.decorator"
-import { UserAuthDto } from "@/auth/dtos/user-auth.dto"
 import { RolesGuard } from "@/guards/role.guard"
 import { UpdateUserDto } from "./dtos/update-user.dto"
+import { User } from "./user.entity"
 
 @Controller("users")
 @Authorized()
@@ -88,7 +88,7 @@ export class UsersController {
     @Put(":id/profile")
     @Serialize(UserDto)
     async updateUserProfile(
-        @CurrentUser() user: UserAuthDto,
+        @CurrentUser() user: User,
         @Param("id") id: string,
         @Body() body: UpdateUserProfileDto
     ) {

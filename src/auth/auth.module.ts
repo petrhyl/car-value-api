@@ -7,6 +7,7 @@ import { JwtStrategy } from "./jwt.strategy"
 import { ConfigService } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { RefreshToken } from "./refresh-token.entity"
+import { RefreshTokenService } from "./refresh-token.service"
 
 @Module({
     imports: [
@@ -20,7 +21,7 @@ import { RefreshToken } from "./refresh-token.entity"
             inject: [ConfigService]
         })
     ],
-    providers: [AuthService, JwtStrategy],
+    providers: [AuthService, JwtStrategy, RefreshTokenService],
     controllers: [AuthController],
     exports: [AuthService]
 })

@@ -3,8 +3,6 @@ import { PassportStrategy } from "@nestjs/passport"
 import { ExtractJwt, Strategy } from "passport-jwt"
 import { ConfigService } from "@nestjs/config"
 import { UsersService } from "../users/users.service"
-import { plainToInstance } from "class-transformer"
-import { UserAuthDto } from "./dtos/user-auth.dto"
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -24,16 +22,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload) {
+        if (payload.type !== "access") {
+            return null
+        }
+
         const user = await this.usersService.findById(payload.sub)
         if (!user || user.tokenVersion !== payload.tokenVersion) {
             return null
         }
 
-        const authUser = plainToInstance(UserAuthDto, user, {
-            excludeExtraneousValues: true
-        })
-
-        return authUser
+        return user
     }
 }
 
@@ -41,4 +39,5 @@ export type JwtPayload = {
     sub: number
     email: string
     tokenVersion: number
+    type: "access" | "refresh"
 }

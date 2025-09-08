@@ -20,8 +20,17 @@ export class RefreshToken {
     userId: number
 
     @Column({
+        type: "timestamp"
+    })
+    expiresAt: Date
+
+    @Column({
         type: "timestamp",
         default: () => "CURRENT_TIMESTAMP"
     })
     createdAt: Date
+
+    isExpired(now: Date): boolean {
+        return now >= this.expiresAt
+    }
 }
