@@ -1,10 +1,13 @@
 # Car Value API
 
 ## Overview
-The Car Value API is a backend service built with [NestJS](https://nestjs.com/) and [TypeORM](https://typeorm.io/) to manage car reports, user authentication, and estimate car values based on various parameters. It supports PostgreSQL databases. It is ready to publish on Heroku platform using Heroku CLI and Heroku Postgres add-on.
+The Car Value API is a backend service built with [NestJS](https://nestjs.com/) and [TypeORM](https://typeorm.io/) to manage car reports, user authentication, and estimate car values based on various parameters. It supports PostgreSQL databases. Authentication is handled using JWT bearer.
 
 ## Features
 - User authentication and authorization (JWT-based).
+- Authentication tokens refreshing.
+- Role-based access control (Admin, Moderator, User).
+- User management (CRUD operations).
 - CRUD operations for car reports.
 - Car value estimation based on filters.
 - Database migrations with TypeORM.
@@ -86,9 +89,11 @@ The Car Value API is a backend service built with [NestJS](https://nestjs.com/) 
 - **Login:** `POST /api/auth/login`
 - **Logout:** `POST /api/auth/logout`
 - **Refresh Token:** `POST /api/auth/refresh-token`
+- **Get Authenticated User:** `GET /api/auth/current-user`
 
 ### Users
-- **Get Current User:** `GET /api/auth/current-user`
+- **Create User:** `POST /api/users`
+- **Get User by ID:** `GET /api/users/:id`
 - **Get All Users:** `GET /api/users`
 - **Update User:** `PUT /api/users/:id`
 - **Delete User:** `DELETE /api/users/:id`
@@ -102,17 +107,10 @@ The Car Value API is a backend service built with [NestJS](https://nestjs.com/) 
 - **Estimate Car Value:** `GET /api/reports/estimate`
 
 ## Database Configuration
-The project supports both PostgreSQL and SQLite. Configure the database in the `.env` file:
+The project supports both PostgreSQL. Configure the database in the `.env` file:
 
-### Example of environment variables for Production:
-```env
-NODE_ENV=production
-DB_TYPE=postgres
-DATABASE_URL=your-database-url
-JWT_SECRET=top-secret-key
-```
 
-## Deployment
+## Deployment (deprecated)
 1. Install the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli).
 2. Log in to Heroku:
    ```bash
