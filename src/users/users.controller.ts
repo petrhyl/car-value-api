@@ -11,17 +11,17 @@ import {
     Query
 } from "@nestjs/common"
 import { UsersService } from "./users.service"
-import { AppUtils } from "../app.utils"
-import { UpdateUserProfileDto } from "./dtos/update-user-profile.dto"
-import { Serialize } from "../interceptors/serialize.interceptor"
-import { UserDto } from "./dtos/user.dto"
-import { Authorized } from "../decorators/auth.decorator"
-import { Roles } from "@/decorators/role.decorator"
-import { RoleName } from "./role.entity"
-import { CurrentUser } from "@/decorators/current-user.decorator"
-import { RolesGuard } from "@/guards/role.guard"
-import { UpdateUserDto } from "./dtos/update-user.dto"
-import { User } from "./user.entity"
+import { AppUtils } from "@/common/utils/app.utils"
+import { UpdateUserProfileRequest } from "@/users/dtos/update-user-profile.request"
+import { Serialize } from "@/common/interceptors/serialize.interceptor"
+import { UserResponse } from "@/users/dtos/user.response"
+import { Authorized } from "@/common/decorators/auth.decorator"
+import { Roles } from "@/common/decorators/role.decorator"
+import { RoleName } from "@/users/entities/role.entity"
+import { AuthUser } from "@/common/decorators/auth-user.decorator"
+import { RolesGuard } from "@/common/guards/role.guard"
+import { UpdateUserRequest } from "./dtos/update-user.request"
+import { CurrentUser } from "@/common/types/current.user"
 
 @Controller("users")
 @Authorized()
@@ -30,7 +30,7 @@ export class UsersController {
 
     @Get()
     @Roles(RoleName.ADMIN, RoleName.MODERATOR)
-    @Serialize(UserDto)
+    @Serialize(UserResponse)
     getAllUsers(@Query("offset") offset?: string, @Query("limit") limit?: string) {
         const parsedOffset = AppUtils.parseNumberOrNull(offset) || 0
         const parsedLimit = AppUtils.parseNumberOrNull(limit) || 10
@@ -49,7 +49,7 @@ export class UsersController {
 
     @Get(":id")
     @Roles(RoleName.ADMIN, RoleName.MODERATOR)
-    @Serialize(UserDto)
+    @Serialize(UserResponse)
     async getUser(@Param("id") id: string) {
         const parsedId = AppUtils.parseNumberOrNull(id)
 
@@ -68,8 +68,8 @@ export class UsersController {
 
     @Put(":id")
     @Roles(RoleName.ADMIN)
-    @Serialize(UserDto)
-    async updateUser(@Param("id") id: string, @Body() body: UpdateUserDto) {
+    @Serialize(UserResponse)
+    async updateUser(@Param("id") id: string, @Body() body: UpdateUserRequest) {
         const parsedId = AppUtils.parseNumberOrNull(id)
 
         if (parsedId === null) {
@@ -86,11 +86,11 @@ export class UsersController {
     }
 
     @Put(":id/profile")
-    @Serialize(UserDto)
+    @Serialize(UserResponse)
     async updateUserProfile(
-        @CurrentUser() user: User,
+        @AuthUser() user: CurrentUser,
         @Param("id") id: string,
-        @Body() body: UpdateUserProfileDto
+        @Body() body: UpdateUserProfileRequest
     ) {
         const parsedId = AppUtils.parseNumberOrNull(id)
 

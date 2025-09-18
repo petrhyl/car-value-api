@@ -1,36 +1,43 @@
 import { Module } from "@nestjs/common"
-import { AppController } from "./app.controller"
-import { AppService } from "./app.service"
-import { UsersModule } from "./users/users.module"
-import { CarReportsModule } from "./car-reports/car-reports.module"
+import { UsersModule } from "@/users/users.module"
+import { CarReportsModule } from "@/car-reports/car-reports.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { ConfigModule } from "@nestjs/config"
-import { AuthModule } from "./auth/auth.module"
-import { AppSeeder } from "./app.seeder"
-import { Role } from "./users/role.entity"
-import { User } from "./users/user.entity"
-import { RolesGuard } from "./guards/role.guard"
+import { ConfigModule, ConfigService } from "@nestjs/config"
+import { AuthModule } from "@/auth/auth.module"
+import { Seeder } from "@/common/database/seeder"
+import { Role } from "@/users/entities/role.entity"
+import { User } from "@/users/entities/user.entity"
+import { RolesGuard } from "@/common/guards/role.guard"
 import { APP_GUARD } from "@nestjs/core"
-import { AuthenticationGuard } from "./guards/authentication.guard"
-import { AppDataSourceOptions } from "./app.data-source"
+import { AuthenticationGuard } from "@/common/guards/authentication.guard"
+import { validateEnv } from "@/common/config/env-vars.validation"
+import { databaseOptionsFactory } from "@/common/database/database.options.factory"
+import { databaseConf } from "@/common/database/database.conf"
+import { jwtConf } from "@/auth/services/jwt/jwt.conf"
+import { refreshTokenServiceConf } from "@/auth/services/refresh-token/refresh-token.conf"
+import { authRedisConf } from "@/auth/store/auth.redis.config"
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             ignoreEnvFile: process.env.NODE_ENV === "production",
             isGlobal: true,
-            envFilePath: `.env.${process.env.NODE_ENV}`
+            expandVariables: true,
+            envFilePath: `.env.${process.env.NODE_ENV}`,
+            validate: validateEnv,
+            load: [databaseConf, jwtConf, refreshTokenServiceConf, authRedisConf]
         }),
-        TypeOrmModule.forRoot({ ...AppDataSourceOptions, autoLoadEntities: true }),
+        TypeOrmModule.forRootAsync({
+            useFactory: databaseOptionsFactory,
+            inject: [ConfigService]
+        }),
         TypeOrmModule.forFeature([Role, User]),
         UsersModule,
         CarReportsModule,
         AuthModule
     ],
-    controllers: [AppController],
     providers: [
-        AppService,
-        AppSeeder,
+        Seeder,
         { provide: APP_GUARD, useClass: AuthenticationGuard },
         { provide: APP_GUARD, useClass: RolesGuard }
     ]

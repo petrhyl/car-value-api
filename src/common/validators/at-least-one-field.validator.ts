@@ -1,7 +1,12 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from "class-validator"
+import {
+    ValidatorConstraint,
+    ValidatorConstraintInterface,
+    ValidationArguments,
+    registerDecorator
+} from "class-validator"
 
 @ValidatorConstraint({ name: "atLeastOneField", async: false })
-export class AtLeastOneField implements ValidatorConstraintInterface {
+class AtLeastOneFieldConstraint implements ValidatorConstraintInterface {
     validate(_value: any, args: ValidationArguments) {
         const obj = args.object as Record<string, unknown>
 
@@ -16,5 +21,20 @@ export class AtLeastOneField implements ValidatorConstraintInterface {
         )
 
         return " - at least one property must be provided - " + fields.join(", ")
+    }
+}
+
+export function AtLeastOneField() {
+    return function (object: object, propertyName: string) {
+        const validator = new AtLeastOneFieldConstraint()
+        validator.validate({}, { object } as ValidationArguments)
+
+        registerDecorator({
+            target: object.constructor,
+            propertyName: propertyName,
+            options: { message: validator.defaultMessage({ object } as ValidationArguments) },
+            constraints: [],
+            validator: AtLeastOneFieldConstraint
+        })
     }
 }

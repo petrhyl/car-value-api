@@ -1,21 +1,21 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common"
-import { CreateCarReportDto } from "./dtos/create-car-report.dto"
-import { CarReport } from "./car-report.entity"
-import { RolesGuard } from "@/guards/role.guard"
-import { RoleName } from "@/users/role.entity"
+import { CreateCarReporRequest } from "./dtos/create-car-report.request"
+import { CarReport } from "./entities/car-report.entity"
+import { RolesGuard } from "@/common/guards/role.guard"
+import { RoleName } from "@/users/entities/role.entity"
 import { GetAllCarReportsQuery } from "./dtos/get-all-car-reports.query"
-import { EstimateDto } from "./dtos/estimate.dto"
+import { EstimateResponse } from "./dtos/estimate.response"
 import { GetEstimateQuery } from "./dtos/get-estimate.query"
 import { CAR_REPORTS_REPOSITORY, CarReportRepository } from "./car-reports.repository.provider"
-import { User } from "@/users/user.entity"
+import { CurrentUser } from "@/common/types/current.user"
 
 @Injectable()
 export class CarReportsService {
     constructor(@Inject(CAR_REPORTS_REPOSITORY) private readonly reportsRepository: CarReportRepository) {}
 
-    async create(user: User, report: CreateCarReportDto) {
+    async create(userId: number, report: CreateCarReporRequest) {
         const newReport = this.reportsRepository.create(report)
-        newReport.creatorId = user.id
+        newReport.creatorId = userId
 
         return await this.reportsRepository.save(newReport)
     }
@@ -27,7 +27,7 @@ export class CarReportsService {
         })
     }
 
-    async findList(query: GetAllCarReportsQuery, user: User): Promise<CarReport[]> {
+    async findList(query: GetAllCarReportsQuery, user: CurrentUser): Promise<CarReport[]> {
         if (!RolesGuard.hasRoles(user, [RoleName.ADMIN, RoleName.MODERATOR])) {
             query.approved = true
         }
@@ -49,7 +49,11 @@ export class CarReportsService {
         return await this.reportsRepository.save(report)
     }
 
-    async update(id: number, user: User, reportData: CreateCarReportDto): Promise<CarReport | null> {
+    async update(
+        id: number,
+        user: CurrentUser,
+        reportData: CreateCarReporRequest
+    ): Promise<CarReport | null> {
         const report = await this.findById(id)
         if (!report) {
             return null
@@ -68,7 +72,7 @@ export class CarReportsService {
         return await this.reportsRepository.save(report)
     }
 
-    async generateEstimate(query: GetEstimateQuery, user: User): Promise<EstimateDto | null> {
+    async generateEstimate(query: GetEstimateQuery, user: CurrentUser): Promise<EstimateResponse | null> {
         if (!RolesGuard.hasRoles(user, [RoleName.ADMIN, RoleName.MODERATOR])) {
             query.approved = true
         }

@@ -1,14 +1,14 @@
-import { CreateUserDto } from "../auth/dtos/create-user.dto"
-import { UserAuthDto } from "../auth/dtos/user-auth.dto"
-import { User } from "./user.entity"
+import { SignupUserRequest } from "@/auth/dtos/signup-user.request"
+import { UserAuthResponse } from "@/auth/dtos/user-auth.response"
+import { User } from "./entities/user.entity"
 
 export class UserMapper {
-    static toNewEntity(dto: CreateUserDto): User {
+    static toNewEntity(dto: SignupUserRequest): User {
         return new User(dto.email, dto.name, dto.nickname)
     }
 
-    static toAuthDto(user: User, accessToken: string, refreshToken: string): UserAuthDto {
-        const userAuthDto = new UserAuthDto()
+    static toAuthDto(user: User, accessToken: string, refreshToken: string): UserAuthResponse {
+        const userAuthDto = new UserAuthResponse()
         userAuthDto.id = user.id
         userAuthDto.email = user.email
         userAuthDto.name = user.name

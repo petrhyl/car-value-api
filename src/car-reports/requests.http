@@ -1,6 +1,6 @@
 ### Login an admin user
 # @name login
-POST http://localhost:3000/api/auth/login
+POST http://localhost:5001/api/auth/login
 Content-Type: application/json
 
 {
@@ -13,33 +13,33 @@ Content-Type: application/json
 @accessToken = {{login.response.body.accessToken}}
 
 ### Create a new report
-POST http://localhost:3000/api/reports
+POST http://localhost:5001/api/reports
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
-    "price": 21500,
+    "price": 19500,
     "make": "Skoda",
-    "model": "Kodiaq",
-    "year": 2024,
+    "model": "Kamiq",
+    "year": 2022,
     "latitude": 48.8566,
     "longitude": 2.3522,
     "mileage": 8000
 }
 
 ### Get report by ID
-GET http://localhost:3000/api/reports/2
+GET http://localhost:5001/api/reports/2
 
 ### Get all reports
-GET http://localhost:3000/api/reports?offset=0&limit=20&make=Mitsubishi
+GET http://localhost:5001/api/reports?offset=0&limit=20&mileage[gte]=20000
 Authorization: Bearer {{accessToken}}
 
 ### Get estimate from filtered reports
-GET http://localhost:3000/api/reports/estimate?make=Toyota
+GET http://localhost:5001/api/reports/estimate?make=Volkswagen
 Authorization: Bearer {{accessToken}}
 
 ### Change report's approval status
-PATCH http://localhost:3000/api/reports/1/approval
+PATCH http://localhost:5001/api/reports/1/approval
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
@@ -48,7 +48,7 @@ Content-Type: application/json
 }
 
 ### Update a report
-PUT http://localhost:3000/api/reports/1
+PUT http://localhost:5001/api/reports/1
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 

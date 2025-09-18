@@ -1,24 +1,25 @@
 import { Injectable, UnauthorizedException, ForbiddenException } from "@nestjs/common"
-import { User } from "../users/user.entity"
-import { UsersService } from "../users/users.service"
-import { CreateUserDto } from "./dtos/create-user.dto"
+import { User } from "@/users/entities/user.entity"
+import { UsersService } from "@/users/users.service"
+import { SignupUserRequest } from "./dtos/signup-user.request"
 import * as argon2 from "argon2"
-import { UserMapper } from "../users/user.mapper"
-import { LoginUserDto } from "./dtos/login-user.dto"
-import { JwtService } from "@nestjs/jwt"
-import { UserAuthDto } from "./dtos/user-auth.dto"
-import { RefreshTokenDto } from "./dtos/refresh-token.dto"
-import { RefreshTokenService } from "./refresh-token.service"
+import { UserMapper } from "@/users/user.mapper"
+import { LoginUserRequest } from "./dtos/login-user.request"
+import { UserAuthResponse } from "./dtos/user-auth.response"
+import { RefreshTokenRequest } from "./dtos/refresh-token.request"
+import { RefreshTokenService } from "./services/refresh-token/refresh-token.service"
+import JwtGenerator from "./services/jwt/jwt.generator"
+import { CurrentUser } from "@/common/types/current.user"
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly refreshTokenService: RefreshTokenService,
-        private readonly jwtService: JwtService
+        private readonly jwtGenerator: JwtGenerator
     ) {}
 
-    async signup(request: CreateUserDto): Promise<User> {
+    async signup(request: SignupUserRequest): Promise<User> {
         const hash = await argon2.hash(request.password)
 
         const newUser = UserMapper.toNewEntity(request)
@@ -29,88 +30,126 @@ export class AuthService {
         return user
     }
 
-    async login(payload: LoginUserDto): Promise<UserAuthDto> {
+    async login(payload: LoginUserRequest): Promise<UserAuthResponse> {
         const user = await this.usersService.findByEmail(payload.email)
         let passwordHash = ""
         if (user) {
             passwordHash = user.passwordHash
         }
 
-        let isValid = false
+        let isPasswordValid = false
         try {
-            isValid = await argon2.verify(passwordHash, payload.password)
+            isPasswordValid = await argon2.verify(passwordHash, payload.password)
         } catch {
-            isValid = false
+            isPasswordValid = false
         }
 
-        if (!user || !isValid) {
+        if (!user || !isPasswordValid) {
             throw new UnauthorizedException("Invalid credentials")
         }
 
-        const existingRefreshTokens = await this.refreshTokenService.findRefreshTokenByUserIdAndClientId(
-            user.id,
+        await this.refreshTokenService.revokeAllTokensOfUser(user.id, payload.clientId)
+
+        const [refreshToken, tokenEntity] = await this.refreshTokenService.createRefreshToken(
+            user,
             payload.clientId
         )
-        if (existingRefreshTokens) {
-            await this.refreshTokenService.invalidateRefreshTokens(existingRefreshTokens)
-        }
 
-        // Generate access token
-        const accessToken = await this.jwtService.signAsync(
-            {
-                sub: user.id,
-                email: user.email,
-                tokenVersion: user.tokenVersion,
-                type: "access"
-            },
-            {
-                expiresIn: "1h"
-            }
+        const accessToken = await this.jwtGenerator.generateToken(
+            user,
+            tokenEntity.familyId,
+            tokenEntity.id.toString()
         )
-
-        const refreshToken = await this.refreshTokenService.createRefreshToken(user, payload.clientId)
 
         return UserMapper.toAuthDto(user, accessToken, refreshToken)
     }
 
-    async logout(user: User, payload: RefreshTokenDto): Promise<void> {
-        const tokenRecord = await this.refreshTokenService.findValidRefreshTokenEntity(payload.refreshToken)
+    async logout(user: CurrentUser, payload: RefreshTokenRequest): Promise<void> {
+        const tokenRecord = await this.refreshTokenService.findRefreshTokenEntity(payload.refreshToken)
+        if (!tokenRecord) {
+            await this.revokeAllTokensOfUser(user.id)
 
-        if (!tokenRecord || tokenRecord.userId !== user.id) {
-            await this.refreshTokenService.invalidateAllTokensOfUser(user.id)
+            throw new UnauthorizedException("Refresh token not found")
+        }
+
+        if (tokenRecord.userId !== user.id) {
+            await this.revokeAllTokensOfUser(user.id)
+            await this.revokeAllTokensOfUser(tokenRecord.userId)
 
             throw new ForbiddenException("You do not have permission to perform this action")
         }
 
-        await this.refreshTokenService.invalidateRefreshTokens([tokenRecord])
+        await this.refreshTokenService.revokeFamilyOfUser(tokenRecord.familyId, tokenRecord.userId)
     }
 
-    async refreshToken(payload: RefreshTokenDto): Promise<UserAuthDto> {
-        const tokenRecord = await this.refreshTokenService.findValidRefreshTokenEntity(payload.refreshToken)
+    async refreshToken(payload: RefreshTokenRequest): Promise<UserAuthResponse> {
+        const tokenEntity = await this.refreshTokenService.findRefreshTokenEntity(payload.refreshToken)
 
-        const user = await this.usersService.findById(tokenRecord.userId)
+        if (!tokenEntity) {
+            throw new UnauthorizedException("Refresh token not found")
+        }
+
+        const user = await this.usersService.findById(tokenEntity.userId)
+
         if (!user) {
-            await this.refreshTokenService.invalidateAllTokensOfUser(tokenRecord.userId)
+            await this.refreshTokenService.revokeAllTokensOfUser(tokenEntity.userId)
 
             throw new ForbiddenException("User no longer exists")
         }
 
-        await this.refreshTokenService.invalidateRefreshTokens([tokenRecord])
-
-        const accessToken = await this.jwtService.signAsync(
-            {
-                sub: user.id,
-                email: user.email,
-                tokenVersion: user.tokenVersion,
-                type: "access"
-            },
-            {
-                expiresIn: "15m"
-            }
+        const isTokenValid = await this.refreshTokenService.isTokenValueValid(
+            tokenEntity,
+            payload.refreshToken,
+            payload.clientId
         )
 
-        const newRefreshToken = await this.refreshTokenService.createRefreshToken(user, payload.clientId)
+        if (!isTokenValid) {
+            await this.refreshTokenService.revokeAllTokensOfUserByVersion(
+                tokenEntity.userId,
+                user.tokenVersion
+            )
+
+            await this.incrementTokenVersion(user)
+
+            throw new ForbiddenException("Invalid refresh token")
+        }
+
+        if (this.refreshTokenService.isExpired(tokenEntity)) {
+            throw new UnauthorizedException("Refresh token has expired")
+        }
+
+        const [newRefreshToken, newTokenEntity] = await this.refreshTokenService.createRefreshToken(
+            user,
+            payload.clientId,
+            tokenEntity.familyId
+        )
+
+        await this.refreshTokenService.replaceTokenById(tokenEntity, newTokenEntity.id)
+
+        const accessToken = await this.jwtGenerator.generateToken(
+            user,
+            newTokenEntity.familyId,
+            newTokenEntity.id.toString()
+        )
 
         return UserMapper.toAuthDto(user, accessToken, newRefreshToken)
+    }
+
+    async incrementTokenVersion(user: User): Promise<void> {
+        user.tokenVersion++
+        await this.usersService.updateUserEntity(user)
+    }
+
+    private async revokeAllTokensOfUser(userId: number): Promise<void> {
+        const user = await this.usersService.findById(userId)
+        if (!user) {
+            await this.refreshTokenService.revokeAllTokensOfUser(userId)
+
+            return
+        }
+
+        await this.refreshTokenService.revokeAllTokensOfUserByVersion(userId, user.tokenVersion)
+
+        await this.incrementTokenVersion(user)
     }
 }

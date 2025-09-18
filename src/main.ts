@@ -13,8 +13,9 @@ async function bootstrap() {
     app.disable("x-powered-by")
     app.setGlobalPrefix("api")
     app.set("query parser", "extended")
+    app.enableShutdownHooks()
 
-    await app.listen(process.env.PORT ?? 3000)
+    await app.listen(process.env.APP_PORT || 5001)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

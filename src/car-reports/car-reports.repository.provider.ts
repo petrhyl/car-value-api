@@ -1,16 +1,16 @@
 import { DataSource, Repository, SelectQueryBuilder } from "typeorm"
-import { CarReport } from "./car-report.entity"
+import { CarReport } from "./entities/car-report.entity"
 import { GetAllCarReportsQuery } from "./dtos/get-all-car-reports.query"
 import { GetEstimateQuery } from "./dtos/get-estimate.query"
 import { RangeFilter } from "@/common/dtos/range-filter.query"
 import { OrderByValue } from "@/common/dtos/order-by-value.enum"
-import { EstimateDto } from "./dtos/estimate.dto"
+import { EstimateResponse } from "./dtos/estimate.response"
 
 export const CAR_REPORTS_REPOSITORY = "CAR_REPORTS_REPOSITORY"
 
 export interface CarReportRepository extends Repository<CarReport> {
     findWithFilters(filters: GetAllCarReportsQuery): Promise<CarReport[]>
-    getAveragePriceWithCount(filters: GetEstimateQuery): Promise<EstimateDto | null>
+    getAveragePriceWithCount(filters: GetEstimateQuery): Promise<EstimateResponse | null>
 }
 
 export const carReportsRepositoryProvider = {
@@ -21,12 +21,12 @@ export const carReportsRepositoryProvider = {
             findWithFilters: (filters: GetAllCarReportsQuery) => {
                 return buildCarReportQuery(filters, carReportRepository).getMany()
             },
-            getAveragePriceWithCount: async (filters: GetEstimateQuery): Promise<EstimateDto | null> => {
+            getAveragePriceWithCount: async (filters: GetEstimateQuery): Promise<EstimateResponse | null> => {
                 const qb = buildCarReportQuery(filters, carReportRepository)
                 const rawResult = await qb
                     .select("AVG(report.price)", "averagePrice")
                     .addSelect("COUNT(report.id)", "carsCount")
-                    .getRawOne<EstimateDto>()
+                    .getRawOne<EstimateResponse>()
 
                 const avg = rawResult?.averagePrice
 

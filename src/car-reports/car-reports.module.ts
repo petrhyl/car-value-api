@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { CarReportsService } from "./car-reports.service"
 import { CarReportsController } from "./car-reports.controller"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { CarReport } from "./car-report.entity"
+import { CarReport } from "./entities/car-report.entity"
 import { carReportsRepositoryProvider } from "./car-reports.repository.provider"
 
 @Module({

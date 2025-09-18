@@ -5,11 +5,11 @@ import {
     UnprocessableEntityException
 } from "@nestjs/common"
 import { Repository } from "typeorm"
-import { User } from "./user.entity"
+import { User } from "./entities/user.entity"
 import { InjectRepository } from "@nestjs/typeorm"
-import { UpdateUserProfileDto } from "./dtos/update-user-profile.dto"
-import { Role, RoleName } from "./role.entity"
-import { UpdateUserDto } from "./dtos/update-user.dto"
+import { UpdateUserProfileRequest } from "./dtos/update-user-profile.request"
+import { Role, RoleName } from "./entities/role.entity"
+import { UpdateUserRequest } from "./dtos/update-user.request"
 
 @Injectable()
 export class UsersService {
@@ -52,7 +52,7 @@ export class UsersService {
         })
     }
 
-    async update(id: number, user: UpdateUserDto): Promise<User | null> {
+    async update(id: number, user: UpdateUserRequest): Promise<User | null> {
         const existingUser = await this.usersRepository.findOneBy({ id })
 
         if (!existingUser) {
@@ -67,7 +67,11 @@ export class UsersService {
         return this.usersRepository.save(existingUser)
     }
 
-    async updateProfile(userId: number, user: UpdateUserProfileDto): Promise<User | null> {
+    async updateUserEntity(user: User): Promise<User> {
+        return this.usersRepository.save(user)
+    }
+
+    async updateProfile(userId: number, user: UpdateUserProfileRequest): Promise<User | null> {
         const existingUser = await this.usersRepository.findOneBy({ id: userId })
 
         if (!existingUser) {

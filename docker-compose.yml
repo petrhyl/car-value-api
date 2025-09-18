@@ -2,7 +2,6 @@ services:
     carvalue_db:
         image: postgres:17
         container_name: car-value_db
-        env_file: .env.development
         environment:
             POSTGRES_PASSWORD: ${DB_PASSWORD}
             POSTGRES_DB: ${DB_NAME}
@@ -17,6 +16,22 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+
+    auth_redis:
+        image: redis:8
+        container_name: car-value-auth_redis
+        command: ["redis-server", "--requirepass", "${AUTH_REDIS_PASSWORD}"]
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        environment:
+            REDIS_PASSWORD: ${AUTH_REDIS_PASSWORD}
+        healthcheck:
+            test: ["CMD", "redis-cli", "-a", "${AUTH_REDIS_PASSWORD}", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+    
 volumes:
     carvalue_data:
         driver: local

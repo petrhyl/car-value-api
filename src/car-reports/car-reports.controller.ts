@@ -1,16 +1,16 @@
 import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Put, Query } from "@nestjs/common"
 import { CarReportsService } from "./car-reports.service"
-import { CreateCarReportDto } from "./dtos/create-car-report.dto"
-import { Authorized } from "@/decorators/auth.decorator"
-import { CurrentUser } from "@/decorators/current-user.decorator"
-import { Serialize } from "@/interceptors/serialize.interceptor"
-import { CarReportDto } from "./dtos/car-report.dto"
-import { ApproveCarReportDto } from "./dtos/approve-car-report.dto"
-import { Roles } from "@/decorators/role.decorator"
-import { RoleName } from "@/users/role.entity"
+import { CreateCarReporRequest } from "./dtos/create-car-report.request"
+import { Authorized } from "@/common/decorators/auth.decorator"
+import { AuthUser } from "@/common/decorators/auth-user.decorator"
+import { Serialize } from "@/common/interceptors/serialize.interceptor"
+import { CarReportResponse } from "./dtos/car-report.response"
+import { ApproveCarReportRequest } from "./dtos/approve-car-report.request"
+import { Roles } from "@/common/decorators/role.decorator"
+import { RoleName } from "@/users/entities/role.entity"
 import { GetAllCarReportsQuery } from "./dtos/get-all-car-reports.query"
 import { GetEstimateQuery } from "./dtos/get-estimate.query"
-import { User } from "@/users/user.entity"
+import { CurrentUser } from "@/common/types/current.user"
 
 @Controller("reports")
 export class CarReportsController {
@@ -18,13 +18,13 @@ export class CarReportsController {
 
     @Post()
     @Authorized()
-    @Serialize(CarReportDto)
-    async createReport(@Body() report: CreateCarReportDto, @CurrentUser() user: User) {
-        return await this.reportsService.create(user, report)
+    @Serialize(CarReportResponse)
+    async createReport(@Body() report: CreateCarReporRequest, @AuthUser() user: CurrentUser) {
+        return await this.reportsService.create(user.id, report)
     }
 
     @Get("estimate")
-    async getEstimate(@Query() query: GetEstimateQuery, @CurrentUser() user: User) {
+    async getEstimate(@Query() query: GetEstimateQuery, @AuthUser() user: CurrentUser) {
         const result = await this.reportsService.generateEstimate(query, user)
 
         if (!result) {
@@ -35,7 +35,7 @@ export class CarReportsController {
     }
 
     @Get(":id")
-    @Serialize(CarReportDto)
+    @Serialize(CarReportResponse)
     async getReportById(@Param("id") id: number) {
         const result = await this.reportsService.findById(id)
         if (!result) {
@@ -46,16 +46,16 @@ export class CarReportsController {
     }
 
     @Get()
-    @Serialize(CarReportDto)
-    async getReports(@Query() query: GetAllCarReportsQuery, @CurrentUser() user: User) {
+    @Serialize(CarReportResponse)
+    async getReports(@Query() query: GetAllCarReportsQuery, @AuthUser() user: CurrentUser) {
         return await this.reportsService.findList(query, user)
     }
 
     @Patch(":id/approval")
     @Authorized()
-    @Serialize(CarReportDto)
+    @Serialize(CarReportResponse)
     @Roles(RoleName.ADMIN, RoleName.MODERATOR)
-    async changeReportApproval(@Param("id") id: number, @Body() body: ApproveCarReportDto) {
+    async changeReportApproval(@Param("id") id: number, @Body() body: ApproveCarReportRequest) {
         const result = await this.reportsService.changeApproval(id, body.approved)
         if (!result) {
             throw new NotFoundException("Report not found")
@@ -66,8 +66,12 @@ export class CarReportsController {
 
     @Put(":id")
     @Authorized()
-    @Serialize(CarReportDto)
-    async updateReport(@Param("id") id: number, @Body() body: CreateCarReportDto, @CurrentUser() user: User) {
+    @Serialize(CarReportResponse)
+    async updateReport(
+        @Param("id") id: number,
+        @Body() body: CreateCarReporRequest,
+        @AuthUser() user: CurrentUser
+    ) {
         const result = await this.reportsService.update(id, user, body)
         if (!result) {
             throw new NotFoundException("Report not found")

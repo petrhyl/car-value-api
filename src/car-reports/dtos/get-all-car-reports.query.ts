@@ -1,7 +1,7 @@
 import { Type, Transform } from "class-transformer"
 import { IsInt, IsOptional, ValidateNested } from "class-validator"
 import { RangeFilter } from "@/common/dtos/range-filter.query"
-import { AppUtils } from "@/app.utils"
+import { AppUtils } from "@/common/utils/app.utils"
 import { OrderCarReportQuery } from "./order-car-report.query"
 import { GetEstimateQuery } from "./get-estimate.query"
 

@@ -71,6 +71,14 @@ The Car Value API is a backend service built with [NestJS](https://nestjs.com/) 
   ```bash
   npm run migration:revert
   ```
+- **Run Interactive Unit Tests:**
+  ```bash
+  npm run test:watch
+  ```
+- **Run End-to-End Tests:**
+  ```bash
+  npm run test:e2e
+  ```
 
 ## API Endpoints
 ### Authentication

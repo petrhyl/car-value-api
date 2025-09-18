@@ -1,4 +1,4 @@
-import { AppUtils } from "@/app.utils"
+import { AppUtils } from "@/common/utils/app.utils"
 import { RangeFilter } from "@/common/dtos/range-filter.query"
 import { Transform, Type } from "class-transformer"
 import {
@@ -7,6 +7,7 @@ import {
     IsLongitude,
     IsOptional,
     IsString,
+    MaxLength,
     MinLength,
     ValidateNested
 } from "class-validator"
@@ -25,11 +26,13 @@ export class GetEstimateQuery {
     @IsOptional()
     @IsString()
     @MinLength(2)
+    @MaxLength(100)
     make?: string
 
     @IsOptional()
     @IsString()
     @MinLength(1)
+    @MaxLength(100)
     model?: string
 
     @IsOptional()

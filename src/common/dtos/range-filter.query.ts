@@ -1,6 +1,6 @@
-import { AppUtils } from "@/app.utils"
+import { AppUtils } from "@/common/utils/app.utils"
 import { Transform } from "class-transformer"
-import { IsOptional, IsInt, Validate } from "class-validator"
+import { IsOptional, IsInt } from "class-validator"
 import { AtLeastOneField } from "../validators/at-least-one-field.validator"
 
 export class RangeFilter {
@@ -19,6 +19,6 @@ export class RangeFilter {
     @IsInt()
     eq?: number
 
-    @Validate(AtLeastOneField)
+    @AtLeastOneField()
     private readonly atLeastOneFieldCheck?: never
 }
