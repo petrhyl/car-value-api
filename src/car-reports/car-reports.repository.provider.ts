@@ -48,6 +48,7 @@ function buildCarReportQuery(
     // Filtering
     for (const key in query) {
         if (!Object.prototype.hasOwnProperty.call(query, key)) continue
+
         const value: unknown = query[key]
         if (value === undefined || value === null) continue
 
@@ -76,7 +77,7 @@ function buildCarReportQuery(
             typeof value === "string" ||
             typeof value === "number" ||
             typeof value === "boolean" ||
-            value === Date
+            value instanceof Date
         ) {
             qb.andWhere(`report.${key} = :${key}`, { [key]: value })
         }

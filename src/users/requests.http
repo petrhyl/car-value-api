@@ -4,7 +4,7 @@ Content-Type: application/json
 
 {
   "email": "user2@example.com",
-  "name": "Joe",
+  "name": "John",
   "password": "StrongPassword123!"
 }
 
@@ -29,7 +29,7 @@ POST http://localhost:5001/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "user2@example.com",
+  "email": "user@example.com",
   "password": "StrongPassword123!",
   "clientId": "{{clientId}}"
 }

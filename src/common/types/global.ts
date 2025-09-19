@@ -29,6 +29,11 @@ declare global {
             AUTH_REDIS_PORT: string
             AUTH_REDIS_PASSWORD: string
 
+            CACHE_REDIS_HOST: string
+            CACHE_REDIS_PORT: string
+            CACHE_REDIS_PASSWORD: string
+            CACHE_REDIS_TTL_SECONDS: string
+
             APP_PORT: string
         }
     }

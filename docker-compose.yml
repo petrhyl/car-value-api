@@ -31,6 +31,21 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
+
+    cache_redis:
+        image: redis:8
+        container_name: car-value-cache_redis
+        command: ["redis-server", "--requirepass", "${CACHE_REDIS_PASSWORD}"]
+        restart: unless-stopped
+        ports:
+            - "6380:6379"
+        environment:
+            REDIS_PASSWORD: ${CACHE_REDIS_PASSWORD}
+        healthcheck:
+            test: ["CMD", "redis-cli", "-a", "${CACHE_REDIS_PASSWORD}", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
     
 volumes:
     carvalue_data:

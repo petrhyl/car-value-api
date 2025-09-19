@@ -36,10 +36,10 @@ export class CarReport {
     @Column({ type: "decimal", precision: 14, scale: 4 })
     price: number
 
-    @Column({ type: "varchar", length: 100 })
+    @Column({ type: "citext" })
     make: string
 
-    @Column({ type: "varchar", length: 100 })
+    @Column({ type: "citext" })
     model: string
 
     @Column("int")

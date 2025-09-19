@@ -47,8 +47,6 @@ export class AuthController {
     @Authorized()
     @Serialize(UserResponse)
     async currentUser(@AuthUser() user: CurrentUser) {
-        console.log("user", user)
-
         const userEntity = await this.usersService.findById(user.id)
 
         if (!userEntity) {

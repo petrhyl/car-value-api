@@ -16,6 +16,8 @@ import { databaseConf } from "@/common/database/database.conf"
 import { jwtConf } from "@/auth/services/jwt/jwt.conf"
 import { refreshTokenServiceConf } from "@/auth/services/refresh-token/refresh-token.conf"
 import { authRedisConf } from "@/auth/store/auth.redis.config"
+import { cacheRedisConf } from "./common/cache/cache.redis.config"
+import CacheRedisModule from "./common/cache/cache.redis.module"
 
 @Module({
     imports: [
@@ -25,13 +27,14 @@ import { authRedisConf } from "@/auth/store/auth.redis.config"
             expandVariables: true,
             envFilePath: `.env.${process.env.NODE_ENV}`,
             validate: validateEnv,
-            load: [databaseConf, jwtConf, refreshTokenServiceConf, authRedisConf]
+            load: [databaseConf, jwtConf, refreshTokenServiceConf, authRedisConf, cacheRedisConf]
         }),
         TypeOrmModule.forRootAsync({
             useFactory: databaseOptionsFactory,
             inject: [ConfigService]
         }),
         TypeOrmModule.forFeature([Role, User]),
+        CacheRedisModule,
         UsersModule,
         CarReportsModule,
         AuthModule

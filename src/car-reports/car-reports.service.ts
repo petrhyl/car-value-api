@@ -27,7 +27,7 @@ export class CarReportsService {
         })
     }
 
-    async findList(query: GetAllCarReportsQuery, user: CurrentUser): Promise<CarReport[]> {
+    async findList(query: GetAllCarReportsQuery, user: CurrentUser | null): Promise<CarReport[]> {
         if (!RolesGuard.hasRoles(user, [RoleName.ADMIN, RoleName.MODERATOR])) {
             query.approved = true
         }
@@ -72,7 +72,10 @@ export class CarReportsService {
         return await this.reportsRepository.save(report)
     }
 
-    async generateEstimate(query: GetEstimateQuery, user: CurrentUser): Promise<EstimateResponse | null> {
+    async generateEstimate(
+        query: GetEstimateQuery,
+        user: CurrentUser | null
+    ): Promise<EstimateResponse | null> {
         if (!RolesGuard.hasRoles(user, [RoleName.ADMIN, RoleName.MODERATOR])) {
             query.approved = true
         }

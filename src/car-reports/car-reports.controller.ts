@@ -11,25 +11,44 @@ import { RoleName } from "@/users/entities/role.entity"
 import { GetAllCarReportsQuery } from "./dtos/get-all-car-reports.query"
 import { GetEstimateQuery } from "./dtos/get-estimate.query"
 import { CurrentUser } from "@/common/types/current.user"
+import CacheRedisService from "@/common/cache/cache.redis.service"
+import { AppUtils } from "@/common/utils/app.utils"
+import { EstimateResponse } from "./dtos/estimate.response"
 
 @Controller("reports")
 export class CarReportsController {
-    constructor(private readonly reportsService: CarReportsService) {}
+    private readonly CACHE_ESTIMATE_TAG = "car_estimates"
+
+    constructor(
+        private readonly reportsService: CarReportsService,
+        private readonly cacheService: CacheRedisService
+    ) {}
 
     @Post()
     @Authorized()
     @Serialize(CarReportResponse)
     async createReport(@Body() report: CreateCarReporRequest, @AuthUser() user: CurrentUser) {
+        await this.cacheService.delByTag(this.CACHE_ESTIMATE_TAG)
+
         return await this.reportsService.create(user.id, report)
     }
 
     @Get("estimate")
-    async getEstimate(@Query() query: GetEstimateQuery, @AuthUser() user: CurrentUser) {
+    async getEstimate(@Query() query: GetEstimateQuery, @AuthUser() user: CurrentUser | null) {
+        const cacheKey = AppUtils.getObjectHash(query)
+        const cached = await this.cacheService.get(cacheKey)
+
+        if (cached) {
+            return JSON.parse(cached) as EstimateResponse
+        }
+
         const result = await this.reportsService.generateEstimate(query, user)
 
         if (!result) {
             throw new NotFoundException("No reports found to generate the estimate")
         }
+
+        await this.cacheService.set(cacheKey, JSON.stringify(result), this.CACHE_ESTIMATE_TAG)
 
         return result
     }
@@ -47,7 +66,7 @@ export class CarReportsController {
 
     @Get()
     @Serialize(CarReportResponse)
-    async getReports(@Query() query: GetAllCarReportsQuery, @AuthUser() user: CurrentUser) {
+    async getReports(@Query() query: GetAllCarReportsQuery, @AuthUser() user: CurrentUser | null) {
         return await this.reportsService.findList(query, user)
     }
 
@@ -60,6 +79,8 @@ export class CarReportsController {
         if (!result) {
             throw new NotFoundException("Report not found")
         }
+
+        await this.cacheService.delByTag(this.CACHE_ESTIMATE_TAG)
 
         return result
     }
@@ -76,6 +97,8 @@ export class CarReportsController {
         if (!result) {
             throw new NotFoundException("Report not found")
         }
+
+        await this.cacheService.delByTag(this.CACHE_ESTIMATE_TAG)
 
         return result
     }

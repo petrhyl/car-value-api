@@ -102,6 +102,24 @@ export class EnvVars {
     @IsNotEmpty()
     AUTH_REDIS_PASSWORD: string
 
+    @IsString()
+    @IsNotEmpty()
+    CACHE_REDIS_HOST: string
+
+    @Transform(({ value }) => parseInt(value as string, 10))
+    @IsInt()
+    @Min(1)
+    CACHE_REDIS_PORT: string
+
+    @IsString()
+    @IsNotEmpty()
+    CACHE_REDIS_PASSWORD: string
+
+    @Transform(({ value }) => parseInt(value as string, 10))
+    @IsInt()
+    @Min(1)
+    CACHE_REDIS_TTL_SECONDS: string
+
     // App
     @Transform(({ value }) => parseInt(value as string, 10))
     @IsInt()

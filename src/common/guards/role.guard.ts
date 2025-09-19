@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
         return RolesGuard.hasRoles(user, requiredRoles)
     }
 
-    static hasRoles(user: CurrentUser, roles: RoleName[]): boolean {
+    static hasRoles(user: CurrentUser | null, roles: RoleName[]): boolean {
         if (!user || !user.roles?.length) {
             return false
         }

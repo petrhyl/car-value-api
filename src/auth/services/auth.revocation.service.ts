@@ -49,21 +49,24 @@ export default class AuthRevocationService {
     async revokeTokenVersionOfUser(tokenVersion: string, userId: string): Promise<void> {
         await this.redisProvider.client.set(
             `${AuthRevocationService.PREFIX}${userId}:${AuthRevocationService.TOKEN_VERSION_PREFIX}${tokenVersion}`,
-            AuthRevocationService.REVOKED_VALUE
+            AuthRevocationService.REVOKED_VALUE,
+            { EX: this.redisProvider.config.ttl }
         )
     }
 
     async revokeSessionOfUser(sessionId: string, userId: string): Promise<void> {
         await this.redisProvider.client.set(
             `${AuthRevocationService.PREFIX}${userId}:${AuthRevocationService.SESSION_PREFIX}${sessionId}`,
-            AuthRevocationService.REVOKED_VALUE
+            AuthRevocationService.REVOKED_VALUE,
+            { EX: this.redisProvider.config.ttl }
         )
     }
 
     async revokeRefreshTokenOfUser(tokenId: string, userId: string): Promise<void> {
         await this.redisProvider.client.set(
             `${AuthRevocationService.PREFIX}${userId}:${AuthRevocationService.REFRESH_TOKEN_PREFIX}${tokenId}`,
-            AuthRevocationService.REVOKED_VALUE
+            AuthRevocationService.REVOKED_VALUE,
+            { EX: this.redisProvider.config.ttl }
         )
     }
 }

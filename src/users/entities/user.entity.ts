@@ -22,7 +22,7 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number
 
-    @Column({ unique: true, type: "varchar", length: 255 })
+    @Column({ unique: true, type: "citext" })
     email: string
 
     @Column({ type: "varchar", length: 255 })
